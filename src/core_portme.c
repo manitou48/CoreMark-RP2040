@@ -44,7 +44,7 @@ volatile ee_s32 seed2_volatile = 0x8;
 volatile ee_s32 seed3_volatile = 0x8;
 #endif
 
-#define ITERATIONS 0
+#define ITERATIONS 3000
 volatile ee_s32 seed4_volatile = ITERATIONS;
 volatile ee_s32 seed5_volatile = 0;
 /* Porting : Timing functions
@@ -141,7 +141,7 @@ void portable_init(core_portable *p, int *argc, char *argv[])
 {
     // Specific Init Code for RP 2040 with a nice welcome message
     stdio_init_all();
-    getchar(); // PAUSE FOR HUMAN INPUT
+//    getchar(); // PAUSE FOR HUMAN INPUT
     ee_printf("CoreMark Performance Benchmark\n\n");
     ee_printf("CoreMark measures how quickly your processor can manage linked\n\n");
     ee_printf("lists, compute matrix multiply, and execute state machine code.\n\n");

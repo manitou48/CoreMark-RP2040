@@ -26,11 +26,13 @@ add_executable(Coremark-RP2040 ${all_SRCS})
 pico_set_program_name(Coremark-RP2040 "Coremark-RP2040")
 pico_set_program_version(Coremark-RP2040 "1.0")
 
-pico_enable_stdio_uart(Coremark-RP2040 0)
-pico_enable_stdio_usb(Coremark-RP2040 1)
+pico_enable_stdio_uart(Coremark-RP2040 1)
+pico_enable_stdio_usb(Coremark-RP2040 0)
+
+pico_set_binary_type(Coremark-RP2040 copy_to_ram)
 
 # Add the standard library to the build
-target_link_libraries(Coremark-RP2040 pico_stdlib)
+target_link_libraries(Coremark-RP2040 pico_stdlib pico_multicore)
 
 # Add any user requested libraries
 target_link_libraries(Coremark-RP2040

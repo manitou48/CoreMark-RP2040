@@ -20,6 +20,7 @@ Original Author: Shay Gal-on
 	This file contains the framework to acquire a block of memory, seed initial parameters, tun t he benchmark and report the results.
 */
 #include "coremark.h"
+#include "pico/multicore.h"
 
 /* Function: iterate
 	Run the benchmark for a specified number of iterations.
@@ -71,6 +72,19 @@ ee_s32 get_seed_32(int i);
 ee_u8 static_memblk[TOTAL_DATA_SIZE];
 #endif
 char *mem_name[3] = {"Static", "Heap", "Stack"};
+// multicore
+core_results results[MULTITHREAD];
+#define PARALLEL_METHOD "multicore"
+ee_u8 core_start_parallel(core_results *res){}
+ee_u8 core_stop_parallel(core_results *res){}
+
+volatile uint32_t done1;
+void core1_entry() {
+    iterate(&results[1]);
+    while(1) done1++;
+}
+
+
 /* Function: main
 	Main entry routine for the benchmark.
 	This function is responsible for the following steps:
@@ -101,7 +115,6 @@ MAIN_RETURN_TYPE main(int argc, char *argv[])
     ee_s16 known_id = -1, total_errors = 0;
     ee_u16 seedcrc = 0;
     CORE_TICKS total_time;
-    core_results results[MULTITHREAD];
 #if (MEM_METHOD == MEM_STACK)
     ee_u8 stack_memblock[TOTAL_DATA_SIZE * MULTITHREAD];
 #endif
@@ -234,7 +247,7 @@ for (i = 0; i < MULTITHREAD; i++)
     /* perform actual benchmark */
     start_time();
 #if (MULTITHREAD > 1)
-    if (default_num_contexts > MULTITHREAD)
+    if (default_num_contexts < MULTITHREAD)
     {
         default_num_contexts = MULTITHREAD;
     }
@@ -248,6 +261,11 @@ for (i = 0; i < MULTITHREAD; i++)
     {
         core_stop_parallel(&results[i]);
     }
+    // core1 stack  0x20000000 + 264*1024 - 200*1024,  100*1024
+    multicore_launch_core1_with_stack(core1_entry,(uint32_t *)536936448,100000);
+//    multicore_launch_core1(core1_entry);
+    iterate(&results[0]);
+    while(done1 ==0);
 #else
     iterate(&results[0]);
 #endif
