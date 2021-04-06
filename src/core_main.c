@@ -73,14 +73,14 @@ ee_u8 static_memblk[TOTAL_DATA_SIZE];
 #endif
 char *mem_name[3] = {"Static", "Heap", "Stack"};
 // multicore
-core_results results[MULTITHREAD];
 #define PARALLEL_METHOD "multicore"
 ee_u8 core_start_parallel(core_results *res){}
 ee_u8 core_stop_parallel(core_results *res){}
 
 volatile uint32_t done1;
 void core1_entry() {
-    iterate(&results[1]);
+	uint32_t ptr = multicore_fifo_pop_blocking();
+	iterate((core_results *) ptr);
     while(1) done1++;
 }
 
@@ -114,6 +114,7 @@ MAIN_RETURN_TYPE main(int argc, char *argv[])
     ee_u16 i, j = 0, num_algorithms = 0;
     ee_s16 known_id = -1, total_errors = 0;
     ee_u16 seedcrc = 0;
+    core_results results[MULTITHREAD];
     CORE_TICKS total_time;
 #if (MEM_METHOD == MEM_STACK)
     ee_u8 stack_memblock[TOTAL_DATA_SIZE * MULTITHREAD];
@@ -264,6 +265,7 @@ for (i = 0; i < MULTITHREAD; i++)
     // core1 stack  0x20000000 + 264*1024 - 200*1024,  100*1024
     multicore_launch_core1_with_stack(core1_entry,(uint32_t *)536936448,100000);
 //    multicore_launch_core1(core1_entry);
+	multicore_fifo_push_blocking((uint32_t) &results[1]);
     iterate(&results[0]);
     while(done1 ==0);
 #else
